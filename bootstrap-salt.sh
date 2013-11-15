@@ -20,6 +20,9 @@ set -o nounset                              # Treat unset variables as an error
 __ScriptVersion="1.5.9"
 __ScriptName="bootstrap-salt.sh"
 
+GITHUB_URL='https://github.com/lesbroot/salt.git'
+GITHUB_RAW_URL='https://raw.github.com/lesbroot/salt
+
 #===============================================================================
 #  Environment variables taken into account.
 #-------------------------------------------------------------------------------
@@ -340,7 +343,7 @@ fi
 # If doing a git install, check what branch/tag/sha will be checked out
 if [ $ITYPE = "git" ]; then
     if [ "$#" -eq 0 ];then
-        GIT_REV="master"
+        GIT_REV="develop"
     else
         __check_unparsed_options "$*"
         GIT_REV="$1"
@@ -948,7 +951,7 @@ __git_clone_and_checkout() {
             git pull --rebase || return 1
         fi
     else
-        git clone git://github.com/saltstack/salt.git || return 1
+        git clone ${GITHUB_URL} || return 1
         cd $SALT_GIT_CHECKOUT_DIR
         git checkout $GIT_REV || return 1
     fi
@@ -2519,11 +2522,11 @@ install_smartos_deps() {
         # Let's download, since they were not provided, the default configuration files
         if [ ! -f $_SALT_ETC_DIR/minion ] && [ ! -f $_TEMP_CONFIG_DIR/minion ]; then
             curl -sk -o $_TEMP_CONFIG_DIR/minion -L \
-                https://raw.github.com/saltstack/salt/develop/conf/minion || return 1
+                ${GITHUB_RAW_URL}/develop/conf/minion || return 1
         fi
         if [ ! -f $_SALT_ETC_DIR/master ] && [ ! -f $_TEMP_CONFIG_DIR/master ]; then
             curl -sk -o $_TEMP_CONFIG_DIR/master -L \
-                https://raw.github.com/saltstack/salt/develop/conf/master || return 1
+                ${GITHUB_RAW_URL}/develop/conf/master || return 1
         fi
     fi
 
@@ -2569,7 +2572,7 @@ install_smartos_post() {
         svcs network/salt-$fname > /dev/null 2>&1
         if [ $? -eq 1 ]; then
             if [ ! -f $_TEMP_CONFIG_DIR/salt-$fname.xml ]; then
-                curl -sk -o $_TEMP_CONFIG_DIR/salt-$fname.xml -L https://raw.github.com/saltstack/salt/develop/pkg/smartos/salt-$fname.xml
+                curl -sk -o $_TEMP_CONFIG_DIR/salt-$fname.xml -L ${GITHUB_RAW_URL}/develop/pkg/smartos/salt-$fname.xml
             fi
             svccfg import $_TEMP_CONFIG_DIR/salt-$fname.xml
             if [ "${VIRTUAL_TYPE}" = "global" ]; then
@@ -2821,7 +2824,7 @@ install_suse_11_stable_deps() {
                 # Let's download, since they were not provided, the default configuration files
                 if [ ! -f $_SALT_ETC_DIR/$fname ] && [ ! -f $_TEMP_CONFIG_DIR/$fname ]; then
                     curl -sk -o $_TEMP_CONFIG_DIR/$fname -L \
-                        https://raw.github.com/saltstack/salt/develop/conf/$fname || return 1
+                        ${GITHUB_RAW_URL}/develop/conf/$fname || return 1
                 fi
             done
         fi
@@ -2872,12 +2875,12 @@ install_suse_11_stable_post() {
             [ $fname = "syndic" ] && [ $_INSTALL_SYNDIC -eq $BS_FALSE ] && continue
 
             if [ -f /bin/systemctl ]; then
-                curl -k -L https://github.com/saltstack/salt/raw/develop/pkg/salt-$fname.service \
+                curl -k -L ${GITHUB_RAW_URL}/develop/pkg/salt-$fname.service \
                     -o /lib/systemd/system/salt-$fname.service || return 1
                 continue
             fi
 
-            curl -k -L https://github.com/saltstack/salt/raw/develop/pkg/rpm/salt-$fname \
+            curl -k -L ${GITHUB_RAW_URL}/develop/pkg/rpm/salt-$fname \
                 -o /etc/init.d/salt-$fname || return 1
             chmod +x /etc/init.d/salt-$fname
 
